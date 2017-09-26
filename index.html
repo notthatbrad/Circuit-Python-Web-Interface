@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+<title>Light Switch</title>
+	
+	
+<style>
+div{
+	margin:20px;
+}
+</style>
+</head>
+
+
+<body>
+
+	<div>
+
+		<form>
+			Ip Address<input type="text" name="webrepl_url" id="url" value="192.168.1.128" />
+			webrepl password<input type="password" name="webrepl_pwd" id="pwd"value="wepass"/>
+			<input type="submit" id="button" value="Connect" onclick="connection_toggle(); return false;" /><br/>
+		</form>
+
+	</div>
+	<div>
+		<form>
+			The led is:<span id="OnOff">OFF</span><br/>
+			<input type="button" id="on_button" value="ON" onclick="turnOn(); return false;" disabled="true"/>
+			<input type="button" id="off_button" value="OFF" onclick="turnOff(); return false;" disabled="true"/>
+			<input type="button" id="toggle_button" value="TOGGLE" onclick="toggle(); return false;" disabled="true"/>
+			
+		</form>
+	
+	</div>
+	<div>We are currently using pin: <span id="pin_in_use">4</span><br/>
+		Enter a new pin number here: <input type="text" id="pin_to_use" value="4" disabled="true"><input type="button" id="update_pin" value="UPDATE" onclick="change_pin(); return false;" disabled="true">
+	</div>
+	<div>
+		Messages: <br/>
+		<span id="response">Not connected. Connect to start demo.<span>
+	</div>
+
+
+
+</body>
+
+<script>
+
+
+var ws;						//websocket variable
+var connected = false;		//boolean for quickly checking state of websocket
+var inputString = '';		//string variable for use in parsing data being received by the websocket
+var startD = "~|-|";		//Delimiter indicating where to begin parsing the script response from the data coming in
+var endD = "|-|~";			//Delimiter indicating when the script data ends in the incoming websocket data
+
+
+
+
+
+function connect(url) {
+	//create the websocket
+    ws = new WebSocket(url);
+	
+	//activates when the websocket is opened
+    ws.onopen = function() {
+		
+		//function for when data is sent to the webSocket
+        ws.onmessage = function(event) {
+
+		
+			//string parsing for response data
+			
+			//add all the incoming data to the already collected data
+			inputString = inputString + event.data;
+			
+			//if the start of data delimiter from above is recognized, clear the inputString variable
+			//to prepare for incoming script data
+			if(inputString.indexOf(startD) !== -1){
+				inputString = '';
+			}
+			
+			//if the end of data delimiter is reached, trim it off, and update the response element with the string
+			if(inputString.indexOf(endD) !== -1){
+
+					inputString = inputString.substring(0, inputString.indexOf(endD));
+					document.getElementById("response").innerHTML = inputString;
+			
+				
+			}
+			
+        };
+		
+		//sends the login password for webrepl
+		ws.send(document.getElementById('pwd').value+ "\r");
+		
+		//On first use, two keypresses are needed to enter the webreplclient.
+		//the next line sends two characters of dummy data to the webrepl client
+		//it is just thrown away if not needed
+		ws.send('bb\r');
+		
+		/*this uses the delimiter data set above to tell the Circuit Python device what delimiters we are using
+		//response data contains all webrepl responses including echoing what was sent.
+		//The on/off functions defined on the Circuit Python device will use these variables
+		//to wrap their return data, so we know what is useful to us
+		*/
+		ws.send("setDelimiters('"+startD+"', '"+endD+"')\r");
+    };
+
+	
+	//this function just resets variables and document state when the websocket is disconnected
+    ws.onclose = function() {
+		document.getElementById("response").innerHTML = "Not connected. Connect to start demo.";
+        connected = false;
+		document.getElementById('on_button').disabled = true;
+		document.getElementById('off_button').disabled = true;
+		document.getElementById('toggle_button').disabled = true;
+		document.getElementById('update_pin').disabled = true;
+		document.getElementById('pin_to_use').disabled = true;
+		document.getElementById('url').disabled = false;
+		document.getElementById('pwd').disabled = false;
+		document.getElementById('button').value = "Connect";
+    }
+}
+
+
+//activates when the connect/disconnect button is pressed.
+function connection_toggle() {
+
+    if (connected) {
+        ws.close();
+    } else {
+		
+		document.getElementById('on_button').disabled = false;
+		document.getElementById('off_button').disabled = false;
+		document.getElementById('toggle_button').disabled = false;
+		document.getElementById('update_pin').disabled = false;
+		document.getElementById('pin_to_use').disabled = false;
+        document.getElementById('url').disabled = true;
+		document.getElementById('pwd').disabled = true;
+        document.getElementById('button').value = "Disconnect";
+        connected = true;
+		
+        connect("ws://"+ document.getElementById('url').value + ":8266/");
+    }
+}
+
+//passes the turnOn function to our Circuit Python device
+//also updates HTML elements to show current state
+function turnOn(){
+	ws.send("turnOn()\r");
+	document.getElementById("OnOff").innerHTML = "ON"
+}
+
+//passes the turnOff function to our Circuit Python device
+//also updates HTML elements to show current state
+function turnOff(){
+	ws.send("turnOff()\r");
+	document.getElementById("OnOff").innerHTML = "OFF"
+}
+
+//passes the toggle function to our Circuit Python device
+//also updates HTML elements to show current state
+function toggle(){
+	ws.send("toggle()\r");
+	if(document.getElementById("OnOff").innerHTML == "ON"){
+		document.getElementById("OnOff").innerHTML = "OFF"
+	}else{
+		document.getElementById("OnOff").innerHTML = "ON"
+	}
+}
+
+function change_pin(){
+	ws.send('turnOff()\r')
+	ws.send('changePinNumber('+document.getElementById("pin_to_use").value+')\r');
+	document.getElementById("pin_in_use").innerHTML = document.getElementById("pin_to_use").value;
+}
+
+</script>
+
+</html>
