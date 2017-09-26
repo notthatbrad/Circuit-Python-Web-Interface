@@ -8,7 +8,7 @@ Webrepl must be enabled on your device for this to function. If it is not, instr
 
 
 FILES
-main.py-this should be uploaded to the main directoryy on the ESP8266, it contains the code for pin manipulation.
+main.py-this should be uploaded to the main directoryy on the ESP8266, it contains the code for pin manipulation, and will run at boot.
 index.html-this file contains the html that will be run in your web browser.
 
 USE The default code uses pin 4. Pin 5 is also available in the demo to demonstrate how to switch pin input. 
