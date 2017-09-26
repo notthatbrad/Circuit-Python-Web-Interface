@@ -17,8 +17,8 @@ div{
 	<div>
 
 		<form>
-			Ip Address<input type="text" name="webrepl_url" id="url" value="192.168.1.128" />
-			webrepl password<input type="password" name="webrepl_pwd" id="pwd"value="wepass"/>
+			Ip Address: <input type="text" name="webrepl_url" id="url" value="ipaddress" />  
+			webrepl password: <input type="password" name="webrepl_pwd" id="pwd"value="yourpassword"/> 
 			<input type="submit" id="button" value="Connect" onclick="connection_toggle(); return false;" /><br/>
 		</form>
 
@@ -34,7 +34,12 @@ div{
 	
 	</div>
 	<div>We are currently using pin: <span id="pin_in_use">4</span><br/>
-		Enter a new pin number here: <input type="text" id="pin_to_use" value="4" disabled="true"><input type="button" id="update_pin" value="UPDATE" onclick="change_pin(); return false;" disabled="true">
+		Select a new pin number: 
+		<select id="pin_to_use">
+			<option value="4" default>4</option>
+			<option value="5">5</option>
+		</select>
+		<input type="button" id="update_pin" value="UPDATE" onclick="change_pin(); return false;" disabled="true">
 	</div>
 	<div>
 		Messages: <br/>
@@ -174,6 +179,7 @@ function change_pin(){
 	ws.send('turnOff()\r')
 	ws.send('changePinNumber('+document.getElementById("pin_to_use").value+')\r');
 	document.getElementById("pin_in_use").innerHTML = document.getElementById("pin_to_use").value;
+	document.getElementById("OnOff").innerHTML = "OFF"
 }
 
 </script>

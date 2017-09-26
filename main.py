@@ -32,4 +32,4 @@ def setDelimiters(dStart, dEnd):
 def changePinNumber(pNumber):
 	global ledPin
 	ledPin = Pin(pNumber, Pin.OUT)
-	print('%snow using pin %s %s, % (startD, pNumber, endD)
+	print('%snow using pin %s %s' % (startD, pNumber, endD))
