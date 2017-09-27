@@ -35,11 +35,10 @@ div{
 	</div>
 	<div>We are currently using pin: <span id="pin_in_use">4</span><br/>
 		Select a new pin number: 
-		<select id="pin_to_use">
+		<select id="pin_to_use" onchange="change_pin(); return false();">
 			<option value="4" default>4</option>
 			<option value="5">5</option>
 		</select>
-		<input type="button" id="update_pin" value="UPDATE" onclick="change_pin(); return false;" disabled="true">
 	</div>
 	<div>
 		Messages: <br/>
@@ -60,7 +59,9 @@ var startD = "~|-|";		//Delimiter indicating where to begin parsing the script r
 var endD = "|-|~";			//Delimiter indicating when the script data ends in the incoming websocket data
 
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+///                         Websocket Functions                     /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 function connect(url) {
@@ -115,12 +116,13 @@ function connect(url) {
 	
 	//this function just resets variables and document state when the websocket is disconnected
     ws.onclose = function() {
+		
 		document.getElementById("response").innerHTML = "Not connected. Connect to start demo.";
-        connected = false;
+		connected = false;
 		document.getElementById('on_button').disabled = true;
 		document.getElementById('off_button').disabled = true;
 		document.getElementById('toggle_button').disabled = true;
-		document.getElementById('update_pin').disabled = true;
+		//document.getElementById('update_pin').disabled = true;
 		document.getElementById('pin_to_use').disabled = true;
 		document.getElementById('url').disabled = false;
 		document.getElementById('pwd').disabled = false;
@@ -129,24 +131,28 @@ function connect(url) {
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+///                         Web Element Interactiions                     ///////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //activates when the connect/disconnect button is pressed.
 function connection_toggle() {
 
     if (connected) {
+		turnOff();
         ws.close();
     } else {
 		
 		document.getElementById('on_button').disabled = false;
 		document.getElementById('off_button').disabled = false;
 		document.getElementById('toggle_button').disabled = false;
-		document.getElementById('update_pin').disabled = false;
+		//document.getElementById('update_pin').disabled = false;
 		document.getElementById('pin_to_use').disabled = false;
-        document.getElementById('url').disabled = true;
+		document.getElementById('url').disabled = true;
 		document.getElementById('pwd').disabled = true;
-        document.getElementById('button').value = "Disconnect";
-        connected = true;
-		
-        connect("ws://"+ document.getElementById('url').value + ":8266/");
+		document.getElementById('button').value = "Disconnect";
+		connected = true;
+		connect("ws://"+ document.getElementById('url').value + ":8266/");
     }
 }
 
@@ -176,7 +182,7 @@ function toggle(){
 }
 
 function change_pin(){
-	ws.send('turnOff()\r')
+	//ws.send('turnOff()\r')
 	ws.send('changePinNumber('+document.getElementById("pin_to_use").value+')\r');
 	document.getElementById("pin_in_use").innerHTML = document.getElementById("pin_to_use").value;
 	document.getElementById("OnOff").innerHTML = "OFF"
