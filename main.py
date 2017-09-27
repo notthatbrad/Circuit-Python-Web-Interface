@@ -31,5 +31,8 @@ def setDelimiters(dStart, dEnd):
 	
 def changePinNumber(pNumber):
 	global ledPin
+	temp = ledPin.value()
+	ledPin.off()
 	ledPin = Pin(pNumber, Pin.OUT)
+	ledPin.value(temp)
 	print('%snow using pin %s %s' % (startD, pNumber, endD))
